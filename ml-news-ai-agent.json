@@ -1,0 +1,542 @@
+{
+  "name": "ml-news-ai-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ac2e6588-6822-45c2-b1bb-0ef5fbd9d58c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3fbbfc71-01ce-4d09-954f-73d78b9a41c7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2ee64d67-5083-4ed3-bf3f-07f4c23cf82b",
+              "leftValue": "={{ $('RSS Read').first().json.pubDate }}",
+              "rightValue": "={{ $now.minus({days: 7}) }}\n",
+              "operator": {
+                "type": "dateTime",
+                "operation": "beforeOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -80
+      ],
+      "id": "6d12b22a-a58d-4bc3-b80c-873b1c0d42ce",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -176
+      ],
+      "id": "05a98dad-ff16-41fc-83c9-1933257e4c68",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You're a helpful, intelligent, summarizer assistant. Your task is to identify the main body text of the article and create a detailed summary of its contents. Identiy any key subjects or themes and the main topic of the article. \n\nSummaries should be no more than 1000 characters, do not include any extra words or phrases like \"summary of article\" or \"the article discusses\"."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1728,
+        -176
+      ],
+      "id": "40a04961-935a-44f7-a2cd-69e2c1c3308d",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        0
+      ],
+      "id": "71fd001f-0d8b-4158-a430-15bfc560db93",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "U1C2x7D7ak7IK9Je",
+          "name": "lead-generation-automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appAf4dPBAN28i1c6",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://airtable.com/appAf4dPBAN28i1c6"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblasx0oGhAomWQXq",
+          "mode": "list",
+          "cachedResultName": "Social Posts",
+          "cachedResultUrl": "https://airtable.com/appAf4dPBAN28i1c6/tblasx0oGhAomWQXq"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sourceSummary": "={{ $json.sourceSummary }}",
+            "sourceHeadline": "={{ $json.sourceHeadline }}",
+            "Copy": "={{ $json.sourceURL }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "sourceHeadline",
+              "displayName": "sourceHeadline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sourceSummary",
+              "displayName": "sourceSummary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Copy",
+              "displayName": "Copy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "imagePrompt",
+              "displayName": "imagePrompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "postImage",
+              "displayName": "postImage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Draft",
+                  "value": "Draft"
+                },
+                {
+                  "name": "Scheduled",
+                  "value": "Scheduled"
+                },
+                {
+                  "name": "Posted",
+                  "value": "Posted"
+                },
+                {
+                  "name": "Archived",
+                  "value": "Archived"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "datePosted",
+              "displayName": "datePosted",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "socialChannels",
+              "displayName": "socialChannels",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "Facebook",
+                  "value": "Facebook"
+                },
+                {
+                  "name": "Instagram",
+                  "value": "Instagram"
+                },
+                {
+                  "name": "LinkedIn",
+                  "value": "LinkedIn"
+                },
+                {
+                  "name": "Twitter",
+                  "value": "Twitter"
+                },
+                {
+                  "name": "TikTok",
+                  "value": "TikTok"
+                },
+                {
+                  "name": "Pinterest",
+                  "value": "Pinterest"
+                },
+                {
+                  "name": "YouTube",
+                  "value": "YouTube"
+                },
+                {
+                  "name": "Threads",
+                  "value": "Threads"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2288,
+        -176
+      ],
+      "id": "06885123-5b58-4420-a205-06a5f04b1b48",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "xrNCFzzxGlpGUBXt",
+          "name": "ml-news-ai-agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return[\n  { \"json\": {\"feed\": \"https://towardsdatascience.com/feed/\"}},\n  { \"json\": {\"feed\": \"https://blog.google/technology/ai/rss/\"}},\n  { \"json\": {\"feed\": \"https://news.mit.edu/rss/topic/machine-learning\"}},\n  { \"json\": {\"feed\": \"https://blogs.cisco.com/tag/machine-learning/feed\"}},\n  { \"json\": {\"feed\": \"https://blogs.nvidia.com/blog/category/deep-learning/feed/\"}},\n  { \"json\": {\"feed\": \"https://machinelearning.apple.com/rss.xml\"}},\n  { \"json\": {\"feed\": \"https://blog.tensorflow.org/feeds/posts/default?alt=rss\"}},\n  { \"json\": {\"feed\": \"https://ai.stanford.edu/blog/feed.xml\"}},\n  { \"json\": {\"feed\": \"https://mlberkeley.substack.com/feed\"}},\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a9da303b-1a73-4b41-97e5-07442df5392f",
+      "name": "RSS Feeds"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.feed }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        96
+      ],
+      "id": "922a963d-9044-444a-aed0-5e9a546723f9",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('If').item.json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -176
+      ],
+      "id": "e9524e64-d39d-429c-8fcb-64a870b0fcb1",
+      "name": "get content"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -176
+      ],
+      "id": "9e903d0f-6435-45bc-b481-3b7db6796448",
+      "name": "HTML to Markdown"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"sourceSummary\": {{ JSON.stringify($json.text) }},\n  \"sourceURL\": {{ JSON.stringify($('Limit').item.json.link) }},\n  \"sourceHeadline\": {{ JSON.stringify($('Limit').item.json.title) }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        -176
+      ],
+      "id": "0d72e652-61cb-45a4-9630-21c3a53bd65b",
+      "name": "Set Fields"
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-10-21T19:40:37.179+03:00",
+          "Readable date": "October 21st 2025, 7:40:37 pm",
+          "Readable time": "7:40:37 pm",
+          "Day of week": "Tuesday",
+          "Year": "2025",
+          "Month": "October",
+          "Day of month": "21",
+          "Hour": "19",
+          "Minute": "40",
+          "Second": "37",
+          "Timezone": "Africa/Addis_Ababa (UTC+03:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "get content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feeds": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get content": {
+      "main": [
+        [
+          {
+            "node": "HTML to Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML to Markdown": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "29fde37f-f36a-43ff-b3b9-0f54ed234919",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ad8c55b798e74260613e5177fd66f410a2c23ed95f8f30ad9bbf3e977506e6a"
+  },
+  "id": "y5Gsfjw4cb7LNBWV",
+  "tags": []
+}
